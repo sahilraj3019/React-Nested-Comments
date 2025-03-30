@@ -27,14 +27,25 @@ const NestedComments = () => {
 
   const addComment = (parentId = null, text) => {
     if (!text.trim()) return;
-
     const newComment = { id: Date.now(), text, children: [] };
-
+    
     if (parentId === null) {
       setComments([...comments, newComment]);
     } else {
       setComments(updateNestedComments(comments, parentId, newComment));
     }
+  };
+
+  const deleteComment = (commentId) => {
+    const filterComments = (commentList) => {
+      return commentList
+        .filter(comment => comment.id !== commentId)
+        .map(comment => ({
+          ...comment,
+          children: filterComments(comment.children)
+        }));
+    };
+    setComments(filterComments(comments));
   };
 
   const updateNestedComments = (commentList, parentId, newComment) => {
@@ -65,6 +76,12 @@ const NestedComments = () => {
           >
             Reply
           </button>
+          <button
+            style={{ marginLeft: "10px", cursor: "pointer", color: "red" }}
+            onClick={() => deleteComment(comment.id)}
+          >
+            Delete
+          </button>
         </p>
         {renderComments(comment.children, level + 1)}
       </div>
@@ -72,7 +89,7 @@ const NestedComments = () => {
   };
 
   return (
-    <div style={{color: 'black'}}>
+    <div style={{ color: 'black' }}>
       <h3>Nested Comments</h3>
       <input
         type="text"
@@ -80,7 +97,7 @@ const NestedComments = () => {
         onChange={(e) => setNewComment(e.target.value)}
         placeholder="Write a comment..."
       />
-      <button onClick={() => addComment(null, newComment)}>Add Comment</button>
+      <button onClick={() => { addComment(null, newComment); setNewComment(''); }}>Add Comment</button>
       <div>{renderComments(comments)}</div>
     </div>
   );
